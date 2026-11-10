@@ -88,21 +88,25 @@ bash tests/device_build.sh
 
 | Image | Flash | Of which program | RAM (`.data` and `.bss`) |
 |---|---|---|---|
-| `nrf52840-dk` | 15,296 B | 2,860 B | 2,660 B |
-| `nrf54lm20-dk` | 16,140 B | 2,916 B | 2,644 B |
-| `frdm-mcxn947` | 21,784 B | 6,178 B | 2,748 B |
+| `nrf52840-dk` | 19,484 B | 4,122 B | 3,252 B |
+| `nrf54lm20-dk` | 20,460 B | 4,294 B | 3,236 B |
+| `frdm-mcxn947` | 21,932 B | 6,284 B | 2,748 B |
 
 The numbers are from the build's memory report.  Flash also holds the
 runtime, the compiler's support library and the program's tables.  The
 arena, 65,536 B on the Nordic boards, is the runtime's heap and is reserved
 whether or not the program uses it.
 
-The two Nordic board packages answer for I2C as absent hardware, so the
-build removes the code that follows the first bus read, and their rows are
-the image without the driver's reading path.  The novo-lang
-repository tracks the missing Nordic I2C driver as a feature.  The FRDM-MCXN947 board
-package drives I2C, and its row is the image with the driver's code in it.
-On the Nordic boards the program prints `as5600: no answer`.
+The Nordic DKs drive I2C with a TWIM (the nRF52840 DK's TWIM0 on SDA P0.26
+and SCL P0.27, the nRF54LM20 DK's TWIM22 on SDA P1.03 and SCL P1.04), on the
+pins `docs/hal/README.md` names under "The Nordic DKs' buses", so all three
+rows are the image with the driver's reading path in it.  Before the Nordic
+buses landed the two DK rows were 15,296 and 16,140 bytes of flash, of which
+the program was 2,860 and 2,916 bytes: the board packages answered for I2C
+as absent hardware, and the build removed the code that follows the first bus
+read.  With no part on the bus the program prints `as5600: no answer`.  A
+reply from the part over a DK's bus is NOT VERIFIED until the driver rig
+carries one.
 
 ### The effects
 

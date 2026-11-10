@@ -40,9 +40,10 @@ position sensor on an I2C bus.
   models that rule as this driver reads it; no part has been read.
 - The OUT pin, the AS5600L (a different default address) and an async form
   are not implemented.
-- The device program builds for the nRF52840 DK and the nRF54LM20 DK, whose
-  board packages answer for I2C as absent hardware: on those images
-  `begin` answers `false` until the boards drive the buses.  The gap is
-  tracked by `features/embedded-devex/nordic-twim-i2c-driver.md`.
+- The device program builds for the nRF52840 DK and the nRF54LM20 DK, which
+  drive I2C with TWIM0 and TWIM22, so their images carry the reading path:
+  19,484 and 20,460 bytes of flash, where before the Nordic buses landed they
+  were 15,296 and 16,140 bytes.  A reply from the part over either bus is
+  NOT VERIFIED.
 - `devices-nv` is the registry range `^0.3.3`, the first release with
   `AngleSensor`.
