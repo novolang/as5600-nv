@@ -127,17 +127,27 @@ pub const RANGE_MIN = 205
 // The largest 12-bit value.
 let MAX12 = 0xFFF
 
-// The power modes of CONF.PM: NOM is the part always converting, and the
-// LPM modes poll every 5, 20 and 100 ms.
+// The power mode NOM of CONF.PM: the part always converting.
 pub const PM_NOM  = 0
+
+// The power mode LPM1: the part polls every 5 ms.
 pub const PM_LPM1 = 1
+
+// The power mode LPM2: the part polls every 20 ms.
 pub const PM_LPM2 = 2
+
+// The power mode LPM3: the part polls every 100 ms.
 pub const PM_LPM3 = 3
 
-// The output stages of CONF.OUTS: the analog output over the full supply
-// range, over 10% to 90% of it, and the PWM output.
+// The output stage of CONF.OUTS that drives the analog output over the
+// full supply range.
 pub const OUT_ANALOG_FULL    = 0
+
+// The output stage that drives the analog output over 10% to 90% of the
+// supply range.
 pub const OUT_ANALOG_REDUCED = 1
+
+// The output stage that drives the PWM output.
 pub const OUT_PWM            = 2
 
 // The CONF fields.
