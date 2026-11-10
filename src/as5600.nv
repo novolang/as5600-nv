@@ -128,7 +128,7 @@ pub const RANGE_MIN = 205
 let MAX12 = 0xFFF
 
 // The power mode NOM of CONF.PM: the part always converting.
-pub const PM_NOM  = 0
+pub const PM_NOM = 0
 
 // The power mode LPM1: the part polls every 5 ms.
 pub const PM_LPM1 = 1
@@ -141,14 +141,14 @@ pub const PM_LPM3 = 3
 
 // The output stage of CONF.OUTS that drives the analog output over the
 // full supply range.
-pub const OUT_ANALOG_FULL    = 0
+pub const OUT_ANALOG_FULL = 0
 
 // The output stage that drives the analog output over 10% to 90% of the
 // supply range.
 pub const OUT_ANALOG_REDUCED = 1
 
 // The output stage that drives the PWM output.
-pub const OUT_PWM            = 2
+pub const OUT_PWM = 2
 
 // The CONF fields.
 pub @value
@@ -346,7 +346,7 @@ pub fn settings_read<P: As5600Port>(p: P) -> ?As5600Settings [hw]
     if not p.read_regs(REG_ZMCO, 9, var b)
         return None
     Some(As5600Settings {
-        zmco: (b[0] as Int) & 0x03,
+        zmco: b[0] as Int & 0x03,
         zpos: ((b[1] as Int << 8) | b[2] as Int) & MAX12,
         mpos: ((b[3] as Int << 8) | b[4] as Int) & MAX12,
         mang: ((b[5] as Int << 8) | b[6] as Int) & MAX12,
@@ -395,7 +395,7 @@ fn conf_store<P: As5600Port>(p: P, v: Int) -> Bool [hw]
         return false
     match word16_read(p, REG_CONF)
         Some(back) => (back & 0x3FFF) == (v & 0x3FFF)
-        None => false
+        None       => false
 
 // Writes the 14 bits of `c` to CONF and keeps the two reserved bits the
 // part holds: whether the part holds what was written.

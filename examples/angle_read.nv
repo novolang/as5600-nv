@@ -61,10 +61,10 @@ fn main() [hw]
                 field(" counts=", r.counts)
                 field(" mdeg=", dev_angle.angle_milli_deg(r.counts))
                 match r.magnet
-                    MagnetOk => hal.uart.write(" magnet=ok\n")
-                    MagnetWeak => hal.uart.write(" magnet=weak\n")
+                    MagnetOk     => hal.uart.write(" magnet=ok\n")
+                    MagnetWeak   => hal.uart.write(" magnet=weak\n")
                     MagnetStrong => hal.uart.write(" magnet=strong\n")
-                    _ => hal.uart.write(" magnet=missing\n")
-            None =>
+                    _            => hal.uart.write(" magnet=missing\n")
+            None    =>
                 hal.uart.write("as5600: no result\n")
         hal.timer.delay_ms(100)

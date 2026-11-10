@@ -233,22 +233,28 @@ fn log_is(c: Chip, want: [Int])
 fn counts_or(o: ?AngleReading) -> Int
     match o
         Some(r) => r.counts
-        None => -1
+        None    => -1
 
 fn magnet_or(o: ?AngleReading) -> MagnetStatus
     match o
         Some(r) => r.magnet
-        None => MagnetMissing
+        None    => MagnetMissing
 
 fn int_or(o: ?Int) -> Int
     match o
         Some(v) => v
-        None => -1
+        None    => -1
 
 fn conf_or(o: ?As5600Conf) -> As5600Conf
     match o
         Some(c) => c
-        None => As5600Conf { power_mode: -1, hysteresis: -1, output_stage: -1, pwm_freq: -1, slow_filter: -1, fast_threshold: -1, watchdog: false }
+        None    => As5600Conf { power_mode: -1,
+            hysteresis: -1,
+            output_stage: -1,
+            pwm_freq: -1,
+            slow_filter: -1,
+            fast_threshold: -1,
+            watchdog: false }
 
 // ── The constants and the tables ─────────────────────────────────────
 
@@ -312,7 +318,13 @@ fn test_the_magnet_status_follows_figure_23() [io, hw]
 
 @test
 fn test_the_conf_fields_pack_into_14_bits() [io, hw]
-    let c = As5600Conf { power_mode: 3, hysteresis: 2, output_stage: 2, pwm_freq: 2, slow_filter: 3, fast_threshold: 5, watchdog: true }
+    let c = As5600Conf { power_mode: 3,
+        hysteresis: 2,
+        output_stage: 2,
+        pwm_freq: 2,
+        slow_filter: 3,
+        fast_threshold: 5,
+        watchdog: true }
     // WD 1, FTH 101, SF 11, PWMF 10, OUTS 10, HYST 10, PM 11.
     test.assert_eq(as5600.conf_bits(c), 0x37AB)
     let d = as5600.conf_of(0x37AB)
@@ -327,7 +339,13 @@ fn test_the_conf_fields_pack_into_14_bits() [io, hw]
     let e = as5600.conf_of(0xC000)
     test.assert_eq(e.power_mode, 0)
     test.assert(not e.watchdog)
-    let off = As5600Conf { power_mode: 0, hysteresis: 0, output_stage: 0, pwm_freq: 0, slow_filter: 0, fast_threshold: 0, watchdog: false }
+    let off = As5600Conf { power_mode: 0,
+        hysteresis: 0,
+        output_stage: 0,
+        pwm_freq: 0,
+        slow_filter: 0,
+        fast_threshold: 0,
+        watchdog: false }
     test.assert_eq(as5600.conf_bits(off), 0)
 
 // ── The bus ──────────────────────────────────────────────────────────
@@ -626,7 +644,7 @@ fn test_the_settings_are_one_read_of_nine_registers() [io, hw]
             test.assert_eq(s.mpos, 0x456)
             test.assert_eq(s.mang, 0x789)
             test.assert_eq(s.conf_raw, 0xC12D)
-        None => test.assert(false)
+        None    => test.assert(false)
     log_is(c, [2, 0x36, 0x00, 9, -1])
 
 @test
@@ -648,13 +666,13 @@ fn test_the_gain_and_the_magnitude_are_one_read_of_three_registers() [io, hw]
         Some(g) =>
             test.assert_eq(g.agc, 128)
             test.assert_eq(g.magnitude, 0x0ABC)
-        None => test.assert(false)
+        None    => test.assert(false)
     log_is(c, [2, 0x36, 0x1A, 3, -1])
     c.st.insert(60, 1)
     c.regs.insert(0x1B, 0xFA)
     match as5600.gain_read(d)
         Some(g) => test.assert_eq(g.magnitude, 0x0ABC)
-        None => test.assert(false)
+        None    => test.assert(false)
 
 // ── The configuration ────────────────────────────────────────────────
 
@@ -678,7 +696,13 @@ fn test_the_conf_register_is_read_as_its_fields() [io, hw]
 fn test_a_conf_write_keeps_the_reserved_bits_and_reads_back() [io, hw]
     let c = chip()
     let d = dut(c)
-    let f = As5600Conf { power_mode: 1, hysteresis: 3, output_stage: 1, pwm_freq: 3, slow_filter: 2, fast_threshold: 7, watchdog: true }
+    let f = As5600Conf { power_mode: 1,
+        hysteresis: 3,
+        output_stage: 1,
+        pwm_freq: 3,
+        slow_filter: 2,
+        fast_threshold: 7,
+        watchdog: true }
     test.assert(as5600.conf_write(d, f))
     // 0xC000 from the factory, then the fields.
     test.assert_eq(at(c.regs, 0x07), 0xC0 | 0x3E)
@@ -689,7 +713,13 @@ fn test_a_conf_write_keeps_the_reserved_bits_and_reads_back() [io, hw]
 fn test_a_conf_write_reports_a_part_that_does_not_hold_it() [io, hw]
     let c = chip()
     let d = dut(c)
-    let f = As5600Conf { power_mode: 1, hysteresis: 0, output_stage: 0, pwm_freq: 0, slow_filter: 0, fast_threshold: 0, watchdog: false }
+    let f = As5600Conf { power_mode: 1,
+        hysteresis: 0,
+        output_stage: 0,
+        pwm_freq: 0,
+        slow_filter: 0,
+        fast_threshold: 0,
+        watchdog: false }
     c.ro.insert(0x08, 1)
     test.assert(not as5600.conf_write(d, f))
     // A part that leaves after the read, after the write.
@@ -790,7 +820,13 @@ fn test_the_type_over_absent_hardware() [io, hw]
     test.assert(not p.set_range(0, 300))
     test.assert(not p.zero_here())
     test.assert(p.conf() == None)
-    let f = As5600Conf { power_mode: 0, hysteresis: 0, output_stage: 0, pwm_freq: 0, slow_filter: 0, fast_threshold: 0, watchdog: false }
+    let f = As5600Conf { power_mode: 0,
+        hysteresis: 0,
+        output_stage: 0,
+        pwm_freq: 0,
+        slow_filter: 0,
+        fast_threshold: 0,
+        watchdog: false }
     test.assert(not p.set_conf(f))
     test.assert(not p.set_power_mode(1))
     test.assert(not p.set_hysteresis(1))

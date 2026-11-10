@@ -15,6 +15,21 @@ driver's functions run over a double of the part that follows the data
 sheet's register map and bus protocol.  A reading from a part on a board
 has not been taken.
 
+## Install
+
+```sh
+novo pkg add as5600-nv
+```
+
+The device program is `examples/angle_read.nv`.  Make it the `main` of a package that
+depends on this one and build it for a board:
+
+```sh
+novo build --target=nrf52840-dk src/main.nv
+novo build --target=nrf54lm20-dk src/main.nv
+novo build --target=frdm-mcxn947 src/main.nv
+```
+
 ## The device program
 
 `examples/angle_read.nv` reads a breakout over I2C ten times a second and
@@ -84,9 +99,8 @@ whether or not the program uses it.
 
 The two Nordic board packages answer for I2C as absent hardware, so the
 build removes the code that follows the first bus read, and their rows are
-the image without the driver's reading path.  The feature
-`features/embedded-devex/nordic-twim-i2c-driver.md` in the novo-lang
-repository tracks the missing Nordic I2C driver.  The FRDM-MCXN947 board
+the image without the driver's reading path.  The novo-lang
+repository tracks the missing Nordic I2C driver as a feature.  The FRDM-MCXN947 board
 package drives I2C, and its row is the image with the driver's code in it.
 On the Nordic boards the program prints `as5600: no answer`.
 
@@ -269,9 +283,7 @@ The sources read for this driver, for their fixes and not ported, are the
 data sheet above, the AS5600L data sheet v1-12 of 2020-May-14 for what the
 two parts share (the watchdog's behaviour, which the v1-06 sheet gives only
 as a detection time), and Zephyr's `drivers/sensor/ams/ams_as5600`.  Embassy and
-esp-hal hold no angle-sensor driver
-(`planning/PERIPHERAL-DRIVER-CANDIDATES.md`, section 3, in the novo-lang
-repository).  Each fix kept is named in `src/as5600.nv` where it is kept:
+esp-hal hold no angle-sensor driver.  Each fix kept is named in `src/as5600.nv` where it is kept:
 
 - The status and the angle are read in two transactions, and each 12-bit
   value alone, because of the pointer rule.  The devices-nv reference
