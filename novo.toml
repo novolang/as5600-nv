@@ -1,0 +1,37 @@
+[package]
+name        = "as5600-nv"
+version     = "0.1.0"
+description = "A driver for ams's AS5600 12-bit magnetic rotary position sensor on an I2C bus: the raw and scaled angle, the magnet status, the gain and magnitude, the ZPOS, MPOS and MANG range, the CONF register's power mode, hysteresis, output stage, PWM frequency, filters and watchdog, and the direction pin as a GPIO option, as devices-nv's AngleSensor.  The one-time-programmable burn commands are not implemented."
+license     = "Apache-2.0"
+stability   = "experimental"
+category    = "embedded"
+layer       = "host"
+tags        = ["as5600", "angle", "encoder", "magnetic", "rotary", "position", "i2c", "sensor", "nrf52840-dk", "nrf54lm20-dk"]
+repository  = "https://github.com/novolang/as5600-nv"
+maintainers = ["novo-lang"]
+novo        = ">= 0.24.0"
+
+# Every module of the package checks at the embedded tier, so a program
+# of any tier, embedded, rt or system, may call it.
+[tier]
+tier = "embedded"
+
+# The device program, examples/angle_read.nv, has no [[bin]] entry: an
+# entry makes the registry list the package as a program, and a library
+# with an entry would be built by `novo install` for the host.
+# tests/device_build.sh builds the program for two boards as the main of
+# a scratch package that depends on this one.
+
+[docs.pages]
+"README.md" = "Reading an AS5600 angle sensor from a device program"
+
+[dependencies]
+# The board's I2C bus and GPIO handles, and the I2cBus and GpioOut traits
+# they implement.  Both are in 0.3.2, which the registry serves; a path
+# dependency here would make devices-nv's own range a second package.
+embedded-hal-nv = "^0.3.2"
+# The wiring record a board's device table hands `attach`, the register
+# helpers, and the AngleSensor trait, which is in devices-nv 0.3.3.  The
+# registry's newest devices-nv is 0.3.2, so this is a path dependency
+# until 0.3.3 is published (PATH-DEPENDENCIES.md).
+devices-nv      = { path = "../devices-nv" }

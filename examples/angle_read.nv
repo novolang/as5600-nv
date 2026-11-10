@@ -1,0 +1,70 @@
+/* angle_read.nv: a reading loop for an AS5600 on a breakout, for an nRF52840
+ * DK or an nRF54LM20 DK
+ *
+ * Build:  bash tests/device_build.sh   (the package's own script)
+ *          or make this file the main of a package that depends on
+ *          as5600-nv and run
+ *              novo build --target=nrf52840-dk src/main.nv
+ * Run:    probe-rs run --chip nRF52840_xxAA main.elf
+ *
+ * NOT a `novo run` program: it targets a board and never ends.
+ *
+ * The breakout's SDA and SCL go to the board's I2C pins and its DIR pin to
+ * ground, which makes the angle increase with clockwise rotation; the
+ * part is at 0x36.  A diametral magnet turns above the chip.  The program
+ * waits the 10 ms the part takes after power-up, makes the position it
+ * finds the zero, and ten times a second prints one line over RTT:
+ *
+ *     as5600 counts=<0 to 4095> mdeg=<0 to 359999> magnet=<state>
+ *
+ * where the state is ok, weak, strong or missing.  With no magnet detected
+ * the part has no angle and the count is 0.
+ *
+ * Effects the program declares: [hw], for the I2C bus, the UART and the
+ * timer.
+ *
+ * Boards: the nRF52840 DK and the nRF54LM20 DK build this program, but
+ * neither board has a driver for its two-wire interface yet (TWIM), so
+ * `BoardI2c` is absent hardware there and the program prints
+ * "as5600: no answer" until a board package names one with `@hal(i2c)`.
+ * The part has not been read on a board.
+ */
+use embedded_hal.{ BoardI2c, BoardGpio }
+use dev_bus
+use dev_angle
+use dev_angle.{ AngleSensor, MagnetOk, MagnetWeak, MagnetStrong }
+use as5600.{ As5600 }
+
+// The part's fixed address.
+const ADDR = 0x36
+
+// A label and a number, written without building a string.
+@tier(embedded)
+fn field(label: Str, v: Int) [hw]
+    hal.uart.write(label)
+    hal.uart.write(str.from_int(v))
+
+@tier(embedded)
+fn main() [hw]
+    let part = As5600.attach(BoardI2c { id: 0 }, BoardGpio { id: 0 }, dev_bus.wiring_i2c(0, ADDR))
+    hal.timer.delay_us(as5600.POWER_UP_US)
+    if not part.begin()
+        hal.uart.write("as5600: no answer\n")
+        return
+    // The position the shaft is at now is angle 0.
+    let _ = part.zero_here()
+    hal.timer.delay_us(as5600.SETTLE_US)
+    loop
+        match part.angle_read()
+            Some(r) =>
+                hal.uart.write("as5600")
+                field(" counts=", r.counts)
+                field(" mdeg=", dev_angle.angle_milli_deg(r.counts))
+                match r.magnet
+                    MagnetOk => hal.uart.write(" magnet=ok\n")
+                    MagnetWeak => hal.uart.write(" magnet=weak\n")
+                    MagnetStrong => hal.uart.write(" magnet=strong\n")
+                    _ => hal.uart.write(" magnet=missing\n")
+            None =>
+                hal.uart.write("as5600: no result\n")
+        hal.timer.delay_ms(100)
