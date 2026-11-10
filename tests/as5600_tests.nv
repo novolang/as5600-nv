@@ -753,6 +753,19 @@ fn test_a_field_write_to_a_part_that_does_not_answer() [io, hw]
     test.assert(not as5600.power_mode_write(d, 1))
     test.assert(not as5600.watchdog_write(d, true))
 
+@test
+fn test_the_generic_word_and_field_accessors() [io, hw]
+    let c = chip()
+    let d = dut(c)
+    // A 12-bit value at any high byte, written and read back.
+    test.assert(as5600.word12_write(d, 0x03, 0x0AB))
+    test.assert_eq(int_or(as5600.word12_read(d, 0x03)), 0x0AB)
+    test.assert(not as5600.word12_write(d, 0x03, 5000))
+    // A CONF field by its shift and width: HYST is two bits at bit 2.
+    test.assert(as5600.conf_field_write(d, 2, 2, 3))
+    test.assert_eq(at(c.regs, 0x08), 0x0C)
+    test.assert(not as5600.conf_field_write(d, 2, 2, 4))
+
 // ── The device types over absent hardware ────────────────────────────
 //
 // The host's handles are absent hardware: every transfer is refused, so
