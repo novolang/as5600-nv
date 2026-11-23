@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.1 — 2026-11-23
+
+The package asks for embedded-hal-nv ^0.4.0 (was ^0.3.2) and devices-nv ^0.4.0 (was ^0.3.3), the minor of both trait packages that the other drivers and the board packages ask for, so one version of each serves a program that takes this package beside any of them.  Under the older ranges, a program that named this package and a driver on 0.4 stopped with "no version of 'embedded-hal-nv' satisfies every requirement".
+
+No signature of the package changed; the suite passes without an edit.
+
+The device program builds for the boards its README names, flash nrf52840-dk 15,060 B before and 15,068 B after; nrf54lm20-dk 16,156 B before and 16,160 B after; frdm-mcxn947 17,000 B before and 17,032 B after; nrf52-qemu 10,476 B before and 10,480 B after.
+
 ## 0.1.0
 
 The first release: a driver for ams's AS5600 12-bit magnetic rotary
