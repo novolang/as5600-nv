@@ -179,7 +179,7 @@ float.
 
 | Module | What is in it |
 |---|---|
-| `as5600` | The types `As5600`, `As5600Conf`, `As5600Gain` and `As5600Settings`, the trait `As5600Port`, the bus framing, the registers, the angle, the zero and the range, the CONF fields and the bring-up |
+| `as5600` | The types `As5600`, `As5600Conf`, `As5600Gain` and `As5600Settings`, the trait `As5600Port` over devices-nv's `RegPort`, the bus framing, the registers, the angle, the zero and the range, the CONF fields and the bring-up |
 
 ## How to choose an entry point
 
@@ -204,7 +204,7 @@ implements `AngleSensor`.
 | `set_clockwise(yes)` | drives the DIR pin; `false` when the board gave none |
 
 A program that holds its own bus, or a test with a double of the part,
-implements `As5600Port` over its bus and calls the module's functions,
+implements devices-nv's `RegPort` (`read_regs` and `write_reg`; the register reads and read-modify-writes, `port.read_reg(reg)` and `port.update_reg_verified(reg, mask, bits)`, are its methods) and `As5600Port` over its bus and calls the module's functions,
 which take the port: `as5600.angle_read_of(port)`,
 `as5600.range_write(port, zpos, mpos)`.  The framing is `i2c_read_into` and
 `i2c_write`, generic over `I2cBus`.  The tables are `pwm_hz`,

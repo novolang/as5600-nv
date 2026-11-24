@@ -82,7 +82,7 @@
 // test runs them over a double of the bus.
 
 use embedded_hal.{ BoardI2c, BoardGpio, I2cBus, GpioOut }
-use dev_bus.{ DeviceWiring, DevBytes }
+use dev_bus.{ DeviceWiring, DevBytes, RegPort }
 use dev_angle.{ MagnetStatus, AngleReading, AngleSensor }
 
 // The registers (Figure 21).
@@ -178,15 +178,13 @@ struct As5600Settings
     mang: Int
     conf_raw: Int
 
-// A bus the part is on.  `setup` makes the bus ready and the DIR pin an
-// output; `read_regs` reads `n` registers from `reg` in one transaction;
-// `write_regs` writes the bytes of `src` from `reg` in one transaction;
+// A bus the part is on. `RegPort` is the register access, `read_regs`,
+// `write_reg` and `write_regs`, with the register reads and writes built
+// on them; `setup` makes the bus ready and the DIR pin an output;
 // `direction` drives the DIR pin, 0 for clockwise and 1 for
 // counterclockwise, and answers whether the wiring gave it one.
-pub trait As5600Port
+pub trait As5600Port: RegPort
     fn setup(self) -> Bool [hw]
-    fn read_regs(self, reg: Int, n: Int, var dst: DevBytes) -> Bool [hw]
-    fn write_regs(self, reg: Int, src: DevBytes) -> Bool [hw]
     fn direction(self, level: Int) -> Bool [hw]
 
 // ── The bus ──────────────────────────────────────────────────────────
@@ -223,11 +221,9 @@ pub fn dir_drive<G: GpioOut>(gpio: G, dir: ?Int, level: Int) -> Bool [hw]
 // ── Register access ──────────────────────────────────────────────────
 
 // The register `reg`, or `None` when the part did not answer.
-pub fn reg_read<P: As5600Port>(p: P, reg: Int) -> ?Int [hw]
-    var b: DevBytes = Vec.new()
-    if not p.read_regs(reg, 1, var b)
-        return None
-    Some(b[0] as Int)
+pub @deprecated(since = "0.2.0", replace_with = "RegPort.read_reg")
+fn reg_read<P: As5600Port>(p: P, reg: Int) -> ?Int [hw]
+    p.read_reg(reg)
 
 // The 12-bit value at the high byte `reg`, or `None` when the part did not
 // answer.  The two bytes are read in one transaction, as the pointer rule
@@ -254,7 +250,7 @@ pub fn word12_write<P: As5600Port>(p: P, reg: Int, v: Int) -> Bool [hw]
 
 // The STATUS register, or `None` when the part did not answer.
 pub fn status_read<P: As5600Port>(p: P) -> ?Int [hw]
-    reg_read(p, REG_STATUS)
+    p.read_reg(REG_STATUS)
 
 // What a STATUS value says about the magnet: not detected, too strong, too
 // weak, or in range.
@@ -302,7 +298,7 @@ pub fn agc_full_scale(supply_3v3: Bool) -> Int
 // The number of times ZPOS and MPOS were burned, 0 to 3, or `None` when
 // the part did not answer.
 pub fn burn_count<P: As5600Port>(p: P) -> ?Int [hw]
-    let Some(z) = reg_read(p, REG_ZMCO) else return None
+    let Some(z) = p.read_reg(REG_ZMCO) else return None
     Some(z & 0x03)
 
 // ── The zero and the range ───────────────────────────────────────────
@@ -519,15 +515,21 @@ struct As5600I2c
     w: DeviceWiring
     dir: ?Int
 
-impl As5600Port for As5600I2c
-    fn setup(self) -> Bool [hw]
-        i2c_setup(self.bus, self.pins, self.w, self.dir)
-
+impl RegPort for As5600I2c
     fn read_regs(self, reg: Int, n: Int, var dst: DevBytes) -> Bool [hw]
         i2c_read_into(self.bus, self.w, reg, n, var dst)
 
+    fn write_reg(self, reg: Int, v: Int) -> Bool [hw]
+        var src: DevBytes = Vec.new()
+        let _ = src.push((v & 0xFF) as u8)
+        i2c_write(self.bus, self.w, reg, src)
+
     fn write_regs(self, reg: Int, src: DevBytes) -> Bool [hw]
         i2c_write(self.bus, self.w, reg, src)
+
+impl As5600Port for As5600I2c
+    fn setup(self) -> Bool [hw]
+        i2c_setup(self.bus, self.pins, self.w, self.dir)
 
     fn direction(self, level: Int) -> Bool [hw]
         dir_drive(self.pins, self.dir, level)
