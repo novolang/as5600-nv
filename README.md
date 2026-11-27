@@ -63,7 +63,7 @@ fn main() [hw]
     if not part.begin()
         hal.uart.write("as5600: no answer\n")
         return
-    let _ = part.zero_here()
+    part.zero_here()
     loop
         match part.angle_read()
             Some(r) =>

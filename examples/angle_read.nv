@@ -52,7 +52,7 @@ fn main() [hw]
         hal.uart.write("as5600: no answer\n")
         return
     // The position the shaft is at now is angle 0.
-    let _ = part.zero_here()
+    part.zero_here()
     hal.timer.delay_us(as5600.SETTLE_US)
     loop
         match part.angle_read()

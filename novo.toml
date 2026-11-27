@@ -1,6 +1,6 @@
 [package]
 name        = "as5600-nv"
-version     = "0.2.0"
+version     = "0.2.1"
 description = "A driver for ams's AS5600 12-bit magnetic rotary position sensor on an I2C bus: the raw and scaled angle, the magnet status, the gain and magnitude, the ZPOS, MPOS and MANG range, the CONF register's power mode, hysteresis, output stage, PWM frequency, filters and watchdog, and the direction pin as a GPIO option, as devices-nv's AngleSensor.  The one-time-programmable burn commands are not implemented."
 license     = "Apache-2.0"
 stability   = "experimental"
